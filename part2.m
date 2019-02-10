@@ -54,6 +54,8 @@ else
     fprintf('cannot reach the goal, distance %f', err);
 end
 
+fprintf('fval %f \n', fval);
+
 P = reshape(p_final,3,N)';
 r = P(:,1);
 p = P(:,2);

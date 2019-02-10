@@ -1,6 +1,6 @@
 function [c,ceq] = constraints2(p,link_lengths, target,twists, gst0, obstacles)
-%UNTITLED5 Summary of this function goes here
-%   Detailed explanation goes here
+
+
 c = -minDistObs(p,link_lengths, obstacles);
 cg = [];
 

@@ -1,4 +1,4 @@
-function [r, p, y] = part1( target, link_length, min_roll, max_roll, min_pitch, max_pitch, min_yaw, max_yaw, obstacles )
+function [r, p, y] = part3( target, link_length, min_roll, max_roll, min_pitch, max_pitch, min_yaw, max_yaw, obstacles )
 %% Function that uses optimization to do inverse kinematics for a snake robot
 
 %%Outputs 
@@ -14,10 +14,10 @@ function [r, p, y] = part1( target, link_length, min_roll, max_roll, min_pitch, 
     % obstacles: A Mx4 matrix where each row is [ x y z radius ] of a sphere
     %    obstacle. M obstacles.
 
-% Your code goes here.
+% CMAES
 target(4:end) = target(4:end)/norm(target(4:end));
 N = numel(link_length);
-q0 = zeros(3*N,1);
+q0 = ones(3*N,1);
 
 twists = zeros(6,3*N);
 p = [0;0;0];
@@ -39,18 +39,24 @@ lb = lb(:);
 ub = [max_roll, max_pitch, max_yaw]';
 ub = ub(:);
 
-%options = optimoptions('fmincon','SpecifyObjectiveGradient',true)
-options = optimset('Display','iter','MaxFunEvals',1000000,'Algorithm','sqp');
-cost = @(q)criterion(q,link_length,twists, gst0, target, obstacles, lb, ub);
-con = @(q)constraints(q, link_length, target,twists, gst0, obstacles);
-[p_final, fval]=fmincon(cost,q0,[],[],[],[],lb,ub,con,options);
-
+%{
+function score = cost_cmaes(x)
+    score = crit_cmaes(x,link_length,twists, gst0, target,obstacles, lb, ub);
+end
+%}
+cost_cmaes = @(x)crit_cmaes(x,link_length,twists, gst0, target,obstacles, lb, ub);
+opts.LogPlot = 'off';
+opts.LBounds = lb; 
+opts.UBounds = ub; 
+%opts.MaxFunEvals = 500;
+%opts.MaxIter = 20;
+[p_final, fval, counteval, stopflag, out, bestever] = cmaes(cost_cmaes,q0 , pi, opts);
 err = norm(ForwardKinematics(p_final, twists,gst0) - target);
 
 if err < 0.1
-    fprintf('the goal is reached, error %f', err);
+    fprintf('the goal is reached, error %f \n', err);
 else
-    fprintf('cannot reach the goal, distance %f', err);
+    fprintf('cannot reach the goal, distance %f \n', err);
 end
 
 fprintf('fval %f \n', fval);

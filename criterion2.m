@@ -1,11 +1,7 @@
 function [score, g] = criterion2(p,link_lengths,twists, gst0, target,obstacles, lb, ub)
 %target 3x1
 % p joint angles
-N = numel(p)/3;
-P = reshape(p,3,N)';
-rolls = P(:,1);
-pitches = P(:,2);
-yaws = P(:,3);
+
 draw(target, link_lengths, p,twists, obstacles);
 [pos] = ForwardKinematics(p,twists,gst0);
 
