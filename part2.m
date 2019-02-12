@@ -17,7 +17,7 @@ function [r, p, y] = part2( target, link_length, min_roll, max_roll, min_pitch, 
 % Your code goes here.
 target(4:end) = target(4:end)/norm(target(4:end));
 N = numel(link_length);
-q0 = ones(3*N,1);
+q0 = unifrnd(-pi,pi,3*N,1);
 
 twists = zeros(6,3*N);
 p = [0;0;0];
@@ -43,7 +43,7 @@ ub = ub(:);
 options = optimoptions('fmincon','Display','iter','MaxFunEvals',1000000,...
     'SpecifyObjectiveGradient', true, 'Algorithm','sqp');
 cost = @(q)criterion2(q,link_length,twists, gst0, target, obstacles, lb, ub);
-con = @(q)constraints2(q, link_length, target,twists, gst0, obstacles);
+con = @(q)constraints(q, link_length, target,twists, gst0, obstacles);
 [p_final, fval]=fmincon(cost,q0,[],[],[],[],lb,ub,con,options);
 
 err = norm(ForwardKinematics(p_final, twists,gst0) - target);
@@ -61,4 +61,4 @@ r = P(:,1);
 p = P(:,2);
 y = P(:,3);
 
-end
+endc

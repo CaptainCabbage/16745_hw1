@@ -16,7 +16,7 @@ axis([-5 5 -5 5 -5 5])
 hold on; 
 for j = 1:M
   r = obstacles(j,4);
-  surf(r*x+obstacles(j,1),r*y+obstacles(j,2),r*z+obstacles(j,3));
+  surf(r*x+obstacles(j,1),r*y+obstacles(j,2),r*z+obstacles(j,3), 'EdgeColor','none');
   hold on;
 end
     

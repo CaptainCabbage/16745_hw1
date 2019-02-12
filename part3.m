@@ -17,8 +17,8 @@ function [r, p, y] = part3( target, link_length, min_roll, max_roll, min_pitch, 
 % CMAES
 target(4:end) = target(4:end)/norm(target(4:end));
 N = numel(link_length);
-q0 = ones(3*N,1);
-
+%q0 = ones(3*N,1);
+q0 = unifrnd(-pi,pi,3*N,1);
 twists = zeros(6,3*N);
 p = [0;0;0];
 for i = 1:N

@@ -1,4 +1,4 @@
-function [r, p, y] = part4( target, link_length, min_roll, max_roll, min_pitch, max_pitch, min_yaw, max_yaw, obstacles )
+function [p_finals, fvals, outputs, flags] = part4( target, link_length, min_roll, max_roll, min_pitch, max_pitch, min_yaw, max_yaw, obstacles, n_trial, algor )
 %% multiple optima
 
 target(4:end) = target(4:end)/norm(target(4:end));
@@ -24,40 +24,39 @@ lb = lb(:);
 ub = [max_roll, max_pitch, max_yaw]';
 ub = ub(:);
 
-% optimization here
-n_trial = 5;
+% multiple initialization
+
 fvals = zeros(n_trial,1);
+flags = zeros(n_trial,1);
 
-parfor k = 1:n_trial
+%optimization here 
+
+options = optimoptions('fmincon',...%'Display','iter',...
+    'MaxFunEvals',10000000,...
+    'SpecifyObjectiveGradient', true, 'Algorithm',algor);
+cost = @(q)criterion2(q,link_length,twists, gst0, target, obstacles, lb, ub);
+con = @(q)constraints(q, link_length, target,twists, gst0, obstacles);
+
+for k = 1:n_trial
     q0{k} = unifrnd(-pi,pi,3*N,1);
+    tic
+    [p_finals{k}, fvals(k), flags(k), outputs{k}]=fmincon(cost,q0{k},[],[],[],[],lb,ub,con,options);
+    toc
+    
+    err = norm(ForwardKinematics(p_finals{k}, twists,gst0) - target);
 
-    options = optimoptions('fmincon','Display','iter','MaxFunEvals',1000000,...
-        'SpecifyObjectiveGradient', true, 'Algorithm','sqp');
-    cost = @(q)criterion2(q,link_length,twists, gst0, target, obstacles, lb, ub);
-    con = @(q)constraints2(q, link_length, target,twists, gst0, obstacles);
-    [p_finals{k}, fvals(k)]=fmincon(cost,q0{k},[],[],[],[],lb,ub,con,options);
-
-    %{
-    err = norm(ForwardKinematics(p_finals(k), twists,gst0) - target);
-
-    if err < 0.1
-        fprintf('the goal is reached, error %f', err);
+    if err < 0.001
+        fprintf('%d th trial: the goal is reached, error %f.',k, err);
     else
-        fprintf('cannot reach the goal, distance %f', err);
+        fprintf('%d th trial: cannot reach the goal, distance %f.',k, err);
     end
 
-    fprintf('fval %f \n', fvals(k));
-    %}
+    fprintf('fval %f, num iter %d \n', fvals(k), outputs{k}.iterations);
+    
 end
 
 [min_f,ind] = min(fvals);
 
 fprintf('best %d th, fval: %f', ind, min_f);
-
-
-P = reshape(p_final{ind},3,N)';
-r = P(:,1);
-p = P(:,2);
-y = P(:,3);
 
 end

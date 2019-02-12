@@ -9,7 +9,7 @@ end
 draw(target, link_lengths, p,twists, obstacles);
 [pos] = ForwardKinematics(p,twists,gst0);
 
-score = norm(target - pos)^2;% - norm(p - lb)^2 - norm(ub - p)^2;
+score = 1000*norm(target - pos)^2 - (norm(p - lb)^2 + norm(ub - p)^2);% - norm(p - lb)^2 - norm(ub - p)^2;
 %score =  -norm(p - lb)^2 - norm(ub - p)^2;
 
 end

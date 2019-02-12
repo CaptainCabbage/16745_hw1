@@ -17,7 +17,7 @@ function [r, p, y] = part1( target, link_length, min_roll, max_roll, min_pitch, 
 % Your code goes here.
 target(4:end) = target(4:end)/norm(target(4:end));
 N = numel(link_length);
-q0 = zeros(3*N,1);
+q0 = unifrnd(-pi,pi,3*N,1);
 
 twists = zeros(6,3*N);
 p = [0;0;0];
@@ -40,10 +40,10 @@ ub = [max_roll, max_pitch, max_yaw]';
 ub = ub(:);
 
 %options = optimoptions('fmincon','SpecifyObjectiveGradient',true)
-options = optimset('Display','iter','MaxFunEvals',1000000,'Algorithm','sqp');
+options = optimset('Display','iter','MaxFunEvals',100000,'Algorithm','sqp');
 cost = @(q)criterion(q,link_length,twists, gst0, target, obstacles, lb, ub);
 con = @(q)constraints(q, link_length, target,twists, gst0, obstacles);
-[p_final, fval]=fmincon(cost,q0,[],[],[],[],lb,ub,con,options);
+[p_final, fval, ~, output]=fmincon(cost,q0,[],[],[],[],lb,ub,con,options);
 
 err = norm(ForwardKinematics(p_final, twists,gst0) - target);
 
@@ -53,7 +53,8 @@ else
     fprintf('cannot reach the goal, distance %f', err);
 end
 
-fprintf('fval %f \n', fval);
+fprintf('fval: %f \n', fval);
+fprintf('iters: %d \n', output.iterations)
 
 P = reshape(p_final,3,N)';
 r = P(:,1);
